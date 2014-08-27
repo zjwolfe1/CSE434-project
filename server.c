@@ -44,7 +44,10 @@ int main(int argc, char *argv[])
     /* Bind to the local address */
     if (bind(sock, (struct sockaddr *) &echoServAddr, sizeof(echoServAddr)) < 0)
         DieWithError("bind() failed");
-  
+
+    printf("-------------------------------------------- \n");
+    printf("Server listening on port %d \n", echoServPort);
+    printf("-------------------------------------------- \n");
     for (;;) /* Run forever */
     {
         /* Set the size of the in-out parameter */
@@ -55,10 +58,10 @@ int main(int argc, char *argv[])
             (struct sockaddr *) &echoClntAddr, &cliAddrLen)) < 0)
             DieWithError("recvfrom() failed");
 
-        printf("Handling client %s\n", inet_ntoa(echoClntAddr.sin_addr));
+        /* Do stuff in here i think. */
 
         /* Send received datagram back to the client */
-        if (sendto(sock, echoBuffer, recvMsgSize, 0, 
+        if (sendto(sock, echoBuffer, recvMsgSize, 0,
              (struct sockaddr *) &echoClntAddr, sizeof(echoClntAddr)) != recvMsgSize)
             DieWithError("sendto() sent a different number of bytes than expected");
     }
