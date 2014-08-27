@@ -2,20 +2,20 @@
 
 ## Build
 ```
-make build
-```sh
+$ make build
+```
 
 ### Server
 ```
 make server
-```sh
+```
 
 ### Client
 ```
 make client
-```sh
+```
 
 ### Clean
 ```
 make clean
-```sh
+```
