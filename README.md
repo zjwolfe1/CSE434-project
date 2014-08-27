@@ -1,21 +1,22 @@
 # CSE434-project
 
-## Build
+## Makefile
+To build server and client
 ```
 $ make build
 ```
 
-### Server
+Just the server
 ```
-make server
-```
-
-### Client
-```
-make client
+$ make server
 ```
 
-### Clean
+Just the client
 ```
-make clean
+$ make client
+```
+
+Clean up the binaries
+```
+$ make clean
 ```
