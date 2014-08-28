@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
     // Client args
     char *name;
     int client;
+    char *servIP;
     int port;
     char *commandArgs;
 
@@ -39,16 +40,17 @@ int main(int argc, char *argv[])
     int commandArgsLen;
     int resLen;
 
-    if (argc != 5)    /* Test for correct number of arguments */
+    if (argc != 6)    /* Test for correct number of arguments */
     {
-        fprintf(stderr,"Usage: %s <Name> <Client Number> <Port> [<Arguments>]\n", argv[0]);
+        fprintf(stderr,"Usage: %s <Name> <Client Number> <Server IP> <Port> [<Arguments>]\n", argv[0]);
         exit(1);
     }
 
     name = argv[1];
     client = atoi(argv[2]);
-    port = atoi(argv[3]);
-    commandArgs = argv[4];
+    servIP = argv[3];
+    port = atoi(argv[4]);
+    commandArgs = argv[5];
 
     if ((commandArgsLen = strlen(commandArgs)) > COMMAND_MAX)  /* Check input length */
         DieWithError("Echo word too long");
@@ -60,6 +62,7 @@ int main(int argc, char *argv[])
     /* Construct the server address structure */
     memset(&servAddr, 0, sizeof(servAddr));    /* Zero out structure */
     servAddr.sin_family = AF_INET;                 /* Internet addr family */
+    servAddr.sin_addr.s_addr = inet_addr(servIP);  /* Server IP address */
     servAddr.sin_port   = htons(port);     /* Server port */
 
     /* Send the string to the server */
