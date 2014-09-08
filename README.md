@@ -3,7 +3,7 @@
 ## Makefile
 To build server and client
 ```
-$ make build
+$ make
 ```
 
 Just the server
