@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
             DieWithError("recvfrom() failed");
 
         /* Do stuff in here i think. */
-        /* printf("reqSize: %d", reqSize); */
+        printf("reqSize: %d", reqSize);
         if (sendto(sock, commandBuffer, reqSize, 0,
              (struct sockaddr *) &clientAddr, sizeof(clientAddr)) != reqSize)
             DieWithError("sendto() sent a different number of bytes than expected");
