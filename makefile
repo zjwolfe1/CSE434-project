@@ -1,15 +1,22 @@
+EXEC = run
 CC = gcc
+CFLAGS = -c -Wall
 
-build:
-	make server
-	make client
+server:utils.o server.o
+	$(CC) -o server utils.o server.o
 
-server:
-	$(CC) -o server server.c
+client:utils.o client.o
+	$(CC) -o client utils.o client.o
 
-client:
-	$(CC) -o client client.c
+server.o:server.c
+	  $(CC) $(CFLAGS) server.c
 
-clean:
+client.o:client.c
+	  $(CC) $(CFLAGS) client.c
+
+utils.o :utils.h utils.c
+	  $(CC) $(CFLAGS) utils.c
+
+clean :
+	rm *.o
 	rm server client
-

@@ -1,65 +1,55 @@
-#include <stdio.h>      /* for printf() and fprintf() */
-#include <sys/socket.h> /* for socket() and bind() */
-#include <arpa/inet.h>  /* for sockaddr_in and inet_ntoa() */
-#include <stdlib.h>     /* for atoi() and exit() */
-#include <string.h>     /* for memset() */
-#include <unistd.h>     /* for close() */
+#include "utils.h"
 
-#define COMMAND_MAX 255     /* Longest string to echo */
+int main(int argc, char* argv[]) {
+  char clientString[REQUEST_MAX] = "     \0";
+  int sock; /* Socket */
+  struct sockaddr_in clientAddr; /* Client address */
+  struct sockaddr_in servAddr;
+  unsigned int cliAddrLen;
+  unsigned short port;
+  struct request* req;
 
-void DieWithError(const char *errorMessage) /* External error handling function */
-{
-    perror(errorMessage);
+  if (argc != 2) {
+    fprintf(stderr, "Usage:  %s <UDP SERVER PORT>\n", argv[0]);
     exit(1);
-}
+  }
 
-int main(int argc, char *argv[])
-{
-    int sock;                        /* Socket */
-    struct sockaddr_in servAddr; /* Local address */
-    struct sockaddr_in clientAddr; /* Client address */
-    unsigned int cliAddrLen;         /* Length of incoming message */
-    char commandBuffer[COMMAND_MAX];        /* Buffer for echo string */
-    unsigned short port;     /* Server port */
-    int reqSize;                 /* Size of received message */
+  port = atoi(argv[1]);
 
-    if (argc != 2)         /* Test for correct number of parameters */
-    {
-        fprintf(stderr,"Usage:  %s <Port>\n", argv[0]);
-        exit(1);
-    }
+  /* Create socket for sending/receiving datagrams */
+  if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
+    printError("socket() failed", 1);
 
-    port = atoi(argv[1]);  /* First arg:  local port */
+  /* Construct local address structure */
+  memset(&servAddr, 0, sizeof(servAddr));
+  servAddr.sin_family = AF_INET;
+  servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+  servAddr.sin_port = htons(port);
 
-    /* Create socket for sending/receiving datagrams */
-    if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
-        DieWithError("socket() failed");
+  /* Bind to the local address */
+  if (bind(sock, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
+    printError("bind() failed", 1);
 
-    /* Construct local address structure */
-    memset(&servAddr, 0, sizeof(servAddr));   /* Zero out structure */
-    servAddr.sin_family = AF_INET;                /* Internet address family */
-    servAddr.sin_addr.s_addr = htonl(INADDR_ANY); /* Any incoming interface */
-    servAddr.sin_port = htons(port);      /* Local port */
+  for (;;) {
+    cliAddrLen = sizeof(clientAddr);
+    req = malloc(sizeof *req);
 
-    /* Bind to the local address */
-    if (bind(sock, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
-        DieWithError("bind() failed");
+    /* printf("before recvfrom()"); */
+    fprintf(stderr, "before recvfrom()\n");
+    if (recvfrom(sock, req, sizeof(struct request), 0, (struct sockaddr *) &clientAddr, &cliAddrLen) < 0)
+      printError("recvfrom() failed", 1);
+    else
+      printRequest(req);
+    fprintf(stderr, "after recvfrom()\n");
 
-    printf("-------------------------------------------- \n");
-    printf("Server listening on port %d \n", port);
-    printf("-------------------------------------------- \n");
-    for (;;) /* Run forever */
-    {
-        cliAddrLen = sizeof(clientAddr);
+    if (sendto(sock, req, sizeof(*req), 0, (struct sockaddr *) &clientAddr, sizeof(clientAddr)) < 0)
+            printError("sendto() sent a different number of bytes than expected", 1);
 
-        if ((reqSize = recvfrom(sock, commandBuffer, COMMAND_MAX, 0,
-            (struct sockaddr *) &clientAddr, &cliAddrLen)) < 0)
-            DieWithError("recvfrom() failed");
+    printf("========================================================\n");
+    printf("Request Sent...\n");
+    printf("========================================================\n");
 
-        /* Do stuff in here i think. */
-        printf("reqSize: %d", reqSize);
-        if (sendto(sock, commandBuffer, reqSize, 0,
-             (struct sockaddr *) &clientAddr, sizeof(clientAddr)) != reqSize)
-            DieWithError("sendto() sent a different number of bytes than expected");
-    }
+    // cleanup
+    free(req);
+  }
 }
