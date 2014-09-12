@@ -11,8 +11,6 @@ int main(int argc, char* argv[]) {
   unsigned short port;
   struct request* req;
 
-  fileLock[0] = 1;
-
   if (argc != 2) {
     fprintf(stderr, "Usage:  %s <UDP SERVER PORT>\n", argv[0]);
     exit(1);
