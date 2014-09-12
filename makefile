@@ -8,7 +8,7 @@ server:utils.o server.o
 client:utils.o client.o
 	$(CC) -o client utils.o client.o
 
-server.o:server.c
+server.o:server.h server.c
 	  $(CC) $(CFLAGS) server.c
 
 client.o:client.c
