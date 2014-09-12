@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "utils.h"
 
 struct request* Request(char* client_ip, char* m, char* c, char* r, char* i, char* operation) {
