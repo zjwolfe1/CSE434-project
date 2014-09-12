@@ -4,6 +4,12 @@
 #define HEADER_FILE
 
 #define REQUEST_MAX 255
+#define OPEN "open"
+#define CLOSE "close"
+#define READ "read"
+#define LSEEK "lseek"
+#define FAIL "fail"
+#define WRITE "write"
 
 struct client {
   char client_ip[16];
@@ -13,15 +19,30 @@ struct client {
   int i;
 };
 
-int fileLock[REQUEST_MAX];
-struct client *clients[REQUEST_MAX];
-int clientNum = 0;
+struct file {
+  FILE *file;
+  char *client;
+  int lock;
+};
 
-void handleRequest(struct request *req);
-struct client* findClient(struct request *req);
-struct client* addClient(struct request *req);
+struct response {
+  int status;
+  int r;
+  char *body;
+};
+
+int clientNum = 0;
+int lastRequest;
+struct client *clients[REQUEST_MAX];
+struct file *files[REQUEST_MAX];
+
+char* handleOperation(struct client *c, char* operation);
 int isClient(struct request *req, struct client *c);
 struct client* Client(char* m, unsigned int c, unsigned int r, unsigned int i);
+struct client* addClient(struct request *req);
+struct client* findClient(struct request *req);
+struct response* handleRequest(struct request *req);
 void printClient(struct client *c);
+char* getFilename(char* operation);
 
 #endif

@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
   }
 
   // setup
-  req = Request(argv[3], argv[1], argv[2], "0", "0", "hi");
+  req = Request(argv[3], argv[1], argv[2], "0", "0", argv[5]);
   printRequest(req);
   servIP = argv[3];
   serverPort = atoi(argv[4]);

@@ -8,6 +8,7 @@ int main(int argc, char* argv[]) {
   unsigned int cliAddrLen;
   unsigned short port;
   struct request* req;
+  struct response* res;
 
   if (argc != 2) {
     fprintf(stderr, "Usage:  %s <UDP SERVER PORT>\n", argv[0]);
@@ -35,14 +36,15 @@ int main(int argc, char* argv[]) {
     req = malloc(sizeof *req);
 
     /* printf("before recvfrom()"); */
-    fprintf(stderr, "before recvfrom()\n");
+    fprintf(stderr, "================================================\n");
+    fprintf(stderr, "Starting server on port %d\n", port);
+    fprintf(stderr, "================================================\n");
     if (recvfrom(sock, req, sizeof(struct request), 0, (struct sockaddr *) &clientAddr, &cliAddrLen) < 0)
       printError("recvfrom() failed", 1);
     else {
       printRequest(req);
       handleRequest(req);
     }
-    fprintf(stderr, "after recvfrom()\n");
 
     if (sendto(sock, req, sizeof(*req), 0, (struct sockaddr *) &clientAddr, sizeof(clientAddr)) < 0)
             printError("sendto() sent a different number of bytes than expected", 1);
@@ -56,11 +58,35 @@ int main(int argc, char* argv[]) {
   }
 }
 
-void handleRequest(struct request *req) {
-  printf("\n Handling new client...");
+struct response* handleRequest(struct request *req) {
+  printf("\n Handling client: %s", req->client_ip);
 
-  struct client* c = findClient(req);
-  printClient(c);
+  struct client* c;
+  struct response *res = malloc(sizeof(*res));
+
+  switch (rand() % 3) {
+    case 0:
+      // drop the request
+      printf("\n Dropping the request... \n");
+      break;
+    case 1:
+      // handle but not send the response
+      printf("\n Handling the request, but not responding... \n");
+      c = findClient(req);
+      handleOperation(c, req->operation);
+      break;
+    case 2:
+      // 1. perform the file op, record the response in the
+      // 2. client table, update the response number in the client
+      // table
+      // handle and send the response
+      // return the code of the file op
+      c = findClient(req);
+      handleOperation(c, req->operation);
+      printClient(c);
+  }
+
+  return res;
 }
 
 struct client* findClient(struct request *req) {
@@ -109,4 +135,35 @@ void printClient(struct client *c) {
   printf("request number: %d \n", c->r);
   printf("incarnartion number: %d \n", c->i);
   printf("=======================================\n");
+}
+
+char* handleOperation(struct client *c, char* operation) {
+  char* file = getFilename(operation);
+
+  if (strstr(operation, OPEN) != NULL)
+    printf("\n Opening! \n");
+  else if (strstr(operation, CLOSE) != NULL)
+    printf("\n closing! \n");
+  else if (strstr(operation, READ) != NULL)
+    printf("\n reading! \n");
+  else if (strstr(operation, LSEEK) != NULL)
+    printf("\n lseeking! \n");
+  else if (strstr(operation, WRITE) != NULL)
+    printf("\n writing! \n");
+  else if (strstr(operation, FAIL) != NULL)
+    printf("\n failing! \n");
+  else
+    printf("\n not sure what to do... \n");
+
+  return "hi";
+}
+
+char* getFilename(char* operation) {
+  int wordCount;
+  char *file;
+  while ( operation != '\0' ) {
+    
+  }
+
+  return "hi";
 }
