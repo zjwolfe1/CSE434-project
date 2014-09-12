@@ -6,8 +6,8 @@
 #include <sys/socket.h>
 #include <unistd.h> 
 
-#ifndef HEADER_FILE
-#define HEADER_FILE
+#ifndef UTILS_H
+#define UTILS_H
 
 #define REQUEST_MAX 255
 

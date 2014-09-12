@@ -1,4 +1,6 @@
+#include "server.h"
 #include "utils.h"
+
 
 int main(int argc, char* argv[]) {
   char clientString[REQUEST_MAX] = "     \0";
@@ -8,6 +10,8 @@ int main(int argc, char* argv[]) {
   unsigned int cliAddrLen;
   unsigned short port;
   struct request* req;
+
+  fileLock[0] = 1;
 
   if (argc != 2) {
     fprintf(stderr, "Usage:  %s <UDP SERVER PORT>\n", argv[0]);
