@@ -138,10 +138,13 @@ void printClient(struct client *c) {
 }
 
 char* handleOperation(struct client *c, char* operation) {
-  char* file = getFilename(operation);
+  char* file = getWord(operation, 1);
+  char* result;
+  printf("\n file: %s \n", file);
 
-  if (strstr(operation, OPEN) != NULL)
+  if (strstr(operation, OPEN) != NULL) {
     printf("\n Opening! \n");
+  }
   else if (strstr(operation, CLOSE) != NULL)
     printf("\n closing! \n");
   else if (strstr(operation, READ) != NULL)
@@ -158,12 +161,21 @@ char* handleOperation(struct client *c, char* operation) {
   return "hi";
 }
 
-char* getFilename(char* operation) {
-  int wordCount;
-  char *file;
-  while ( operation != '\0' ) {
-    
+char* getWord(char* line, int wordNum) {
+  int words = 0, index = 0, len = strlen(line);
+  char* file = (char*)malloc(sizeof(len));
+  char letter;
+
+  for (int i = 0; i < len; i++) {
+    letter = line[i];
+
+    if (isspace(letter)) words++;
+    if (words == wordNum) {
+      file[index] = letter;
+      index++;
+    }
   }
 
-  return "hi";
+  file[index] = '\0';
+  return file;
 }

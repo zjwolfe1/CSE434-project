@@ -43,6 +43,7 @@ struct client* addClient(struct request *req);
 struct client* findClient(struct request *req);
 struct response* handleRequest(struct request *req);
 void printClient(struct client *c);
-char* getFilename(char* operation);
+char* getWord(char* line, int wordNum);
+
 
 #endif
