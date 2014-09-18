@@ -46,6 +46,7 @@ int main(int argc, char* argv[]) {
 
   // cleanup
   free(req);
+  free(res);
 
   close(sock);
   exit(0);

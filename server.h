@@ -43,7 +43,7 @@ char* getWord(char* line, int wordNum);
 int open(char* file, char* permissions);
 int getFile(char* fileName);
 char* prefixFilename(char* file, struct client* clientName);
-char* readFile(char* file, int bytes);
+void readFile(char* body, char* file, int bytes);
 /* int write(struct file *file, char* argument); */
 
 #endif

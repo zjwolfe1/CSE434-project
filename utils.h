@@ -24,7 +24,7 @@ struct request {
 struct response {
   int status;
   int r;
-  char *body;
+  char body[80];
 };
 
 void printRequest(struct request* req);
