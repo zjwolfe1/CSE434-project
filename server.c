@@ -31,19 +31,20 @@ int main(int argc, char* argv[]) {
   if (bind(sock, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
     printError("bind() failed", 1);
 
+  fprintf(stderr, "================================================\n");
+  fprintf(stderr, "Starting server on port %d\n", port);
+  fprintf(stderr, "================================================\n");
   for (;;) {
     cliAddrLen = sizeof(clientAddr);
     req = malloc(sizeof *req);
 
     /* printf("before recvfrom()"); */
-    fprintf(stderr, "================================================\n");
-    fprintf(stderr, "Starting server on port %d\n", port);
-    fprintf(stderr, "================================================\n");
     if (recvfrom(sock, req, sizeof(struct request), 0, (struct sockaddr *) &clientAddr, &cliAddrLen) < 0)
       printError("recvfrom() failed", 1);
     else {
       printRequest(req);
       res = handleRequest(req);
+      printResponse(res);
     }
 
     if (sendto(sock, res, sizeof(*res), 0, (struct sockaddr *) &clientAddr, sizeof(clientAddr)) < 0)
@@ -55,6 +56,7 @@ int main(int argc, char* argv[]) {
 
     // cleanup
     free(req);
+    free(res);
   }
 }
 
@@ -67,13 +69,15 @@ struct response* handleRequest(struct request *req) {
   switch (rand() % 3) {
     case 0:
       // drop the request
-      printf("\n Dropping the request... \n");
+      printf("\nDropping the request... \n");
+      res = malloc(sizeof(*res));
       break;
     case 1:
       // handle but not send the response
       printf("\nHandling the request, but not responding... \n");
       c = findClient(req);
-      res = handleOperation(c, req->operation);
+      res = malloc(sizeof(*res));
+      handleOperation(c, req->operation);
       break;
     case 2:
       // 1. perform the file op, record the response in the
@@ -151,10 +155,17 @@ struct response* handleOperation(struct client *c, char* operation) {
     res->status = open(fileName, options);
     res->r = c->r;
   }
+
   else if (strstr(operation, CLOSE) != NULL)
     printf("\nclosing! \n");
-  else if (strstr(operation, READ) != NULL)
+
+  else if (strstr(operation, READ) != NULL) {
     printf("\nreading! \n");
+    readFile(res->body, fileName, atoi(options));
+    res->r = c->r;
+    res->status = (res->body) ? 1 : 0;
+  }
+
   else if (strstr(operation, LSEEK) != NULL)
     printf("\nlseeking! \n");
   else if (strstr(operation, WRITE) != NULL)
@@ -175,7 +186,8 @@ char* getWord(char* line, int wordNum) {
   for (int i = 0; i < len; i++) {
     letter = line[i];
 
-    if (words == wordNum) {
+    if (words == wordNum && !isspace(letter)) {
+      printf("char: %c, word: %d, wordNum: %d\n", letter, words, wordNum);
       file[index] = letter;
       index++;
     }
@@ -191,16 +203,17 @@ int open(char* file, char* permissions) {
   int write = (strstr(permissions, WRITE) != NULL) ? 1 : 0;
   struct file *f;
 
-  if (read && write) permissions = "rw";
-  else if (read) permissions = "r";
-  else if (write) permissions = "w";
-
-  printf("index: %d\n", index);
   // not found
   if (index == -1) {
     f = (struct file *)malloc(sizeof(struct file));
     f->fileName = file;
-    f->file = fopen(file, permissions);
+    f->file = fopen(file, "r+");
+
+    // if not found try again
+    if (!f->file) {
+      f->file = fopen(file, "w+");
+    }
+
     files[fileNum] = f;
     fileNum++;
   } else {
@@ -223,13 +236,27 @@ int getFile(char* fileName) {
   return -1;
 }
 
-char* readFile(char* file, int bytes) {
+void readFile(char* body, char* file, int bytes) {
+  int index = getFile(file);
+  struct file* f;
 
-  return "hi";
+  if (index == -1) return;
+
+  f = files[index];
+
+  // check if can read
+  if (f->read && f->file) {
+    printf("strcmp: %d\n", (strcmp(f->fileName, "zach3-f1.txt") != 0));
+    fread(body, 1, bytes, f->file);
+    printf("Buffer: %s, bytes: %d, filename: %s\n", body, bytes, f->fileName);
+  }
+  else
+    printf("permission denied.\n");
 }
 
 char* prefixFilename(char* file, struct client *c) {
-  char buf[2];
+  printf("\n FILE: %s,%d\n", file, 2);
+  char buf[sizeof(int) + 1];
   sprintf(buf, "%d", c->c);
   char* fileName = strcat(c->m, buf);
   fileName = strcat(fileName, "-");

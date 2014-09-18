@@ -3,10 +3,10 @@ CC = gcc
 CFLAGS = -c -Wall
 
 server:utils.o server.o
-	$(CC) -o server utils.o server.o
+	$(CC) -g -o server utils.o server.o
 
 client:utils.o client.o
-	$(CC) -o client utils.o client.o
+	$(CC) -g -o client utils.o client.o
 
 server.o:server.h server.c
 	  $(CC) $(CFLAGS) server.c
