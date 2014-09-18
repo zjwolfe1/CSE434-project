@@ -1,6 +1,4 @@
 #include "server.h"
-#include "utils.h"
-
 
 int main(int argc, char* argv[]) {
   char clientString[REQUEST_MAX] = "     \0";
@@ -40,8 +38,10 @@ int main(int argc, char* argv[]) {
     fprintf(stderr, "before recvfrom()\n");
     if (recvfrom(sock, req, sizeof(struct request), 0, (struct sockaddr *) &clientAddr, &cliAddrLen) < 0)
       printError("recvfrom() failed", 1);
-    else
+    else {
       printRequest(req);
+      handleRequest(req);
+    }
     fprintf(stderr, "after recvfrom()\n");
 
     if (sendto(sock, req, sizeof(*req), 0, (struct sockaddr *) &clientAddr, sizeof(clientAddr)) < 0)
@@ -54,4 +54,59 @@ int main(int argc, char* argv[]) {
     // cleanup
     free(req);
   }
+}
+
+void handleRequest(struct request *req) {
+  printf("\n Handling new client...");
+
+  struct client* c = findClient(req);
+  printClient(c);
+}
+
+struct client* findClient(struct request *req) {
+  for (int i = 0; i < clientNum; i++)
+    if (isClient(req, clients[i]))
+      return clients[i];
+
+  return addClient(req);
+}
+
+struct client* addClient(struct request *req) {
+  printf("\n Adding new client! \n");
+
+  struct client *c =  Client(req->m, req->c, req->r, req->i);
+  clients[clientNum] = c;
+  clientNum++;
+
+  return c;
+}
+
+// compare requets to client, just a lil helper
+int isClient(struct request *req, struct client *c) {
+  return (
+      !strcmp(req->m, c->m) &&
+      req->c == c->c &&
+      req->r == c->r &&
+      req->i == c->i
+     ) ? 1 : 0;
+}
+
+// Constructor for client
+struct client* Client(char* m, unsigned int c, unsigned int r, unsigned int i) {
+  struct client *client = malloc(sizeof(*client));
+  strcpy(client->m, m);
+  client->c = c;
+  client->r = r;
+  client->i = i;
+
+  return client;
+}
+
+void printClient(struct client *c) {
+  printf("\n============== Client ================\n");
+  printf("name: %s \n", c->m);
+  printf("client number: %d \n", c->c);
+  printf("request number: %d \n", c->r);
+  printf("incarnartion number: %d \n", c->i);
+  printf("=======================================\n");
 }
