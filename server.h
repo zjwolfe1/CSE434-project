@@ -20,23 +20,19 @@ struct client {
 };
 
 struct file {
-  FILE *file;
-  char *client;
-  int lock;
-};
-
-struct response {
-  int status;
-  int r;
-  char *body;
+  char* fileName;
+  FILE* file;
+  int read;
+  int write;
 };
 
 int clientNum = 0;
+int fileNum = 0;
 int lastRequest;
 struct client *clients[REQUEST_MAX];
 struct file *files[REQUEST_MAX];
 
-char* handleOperation(struct client *c, char* operation);
+struct response* handleOperation(struct client *c, char* operation);
 int isClient(struct request *req, struct client *c);
 struct client* Client(char* m, unsigned int c, unsigned int r, unsigned int i);
 struct client* addClient(struct request *req);
@@ -44,6 +40,10 @@ struct client* findClient(struct request *req);
 struct response* handleRequest(struct request *req);
 void printClient(struct client *c);
 char* getWord(char* line, int wordNum);
-
+int open(char* file, char* permissions);
+int getFile(char* fileName);
+char* prefixFilename(char* file, struct client* clientName);
+char* readFile(char* file, int bytes);
+/* int write(struct file *file, char* argument); */
 
 #endif

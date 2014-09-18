@@ -43,14 +43,14 @@ int main(int argc, char* argv[]) {
       printError("recvfrom() failed", 1);
     else {
       printRequest(req);
-      handleRequest(req);
+      res = handleRequest(req);
     }
 
-    if (sendto(sock, req, sizeof(*req), 0, (struct sockaddr *) &clientAddr, sizeof(clientAddr)) < 0)
+    if (sendto(sock, res, sizeof(*res), 0, (struct sockaddr *) &clientAddr, sizeof(clientAddr)) < 0)
             printError("sendto() sent a different number of bytes than expected", 1);
 
     printf("========================================================\n");
-    printf("Request Sent...\n");
+    printf("Response Sent...\n");
     printf("========================================================\n");
 
     // cleanup
@@ -59,10 +59,10 @@ int main(int argc, char* argv[]) {
 }
 
 struct response* handleRequest(struct request *req) {
-  printf("\n Handling client: %s", req->client_ip);
+  printf("\nHandling client: %s", req->client_ip);
 
   struct client* c;
-  struct response *res = malloc(sizeof(*res));
+  struct response *res;
 
   switch (rand() % 3) {
     case 0:
@@ -71,9 +71,9 @@ struct response* handleRequest(struct request *req) {
       break;
     case 1:
       // handle but not send the response
-      printf("\n Handling the request, but not responding... \n");
+      printf("\nHandling the request, but not responding... \n");
       c = findClient(req);
-      handleOperation(c, req->operation);
+      res = handleOperation(c, req->operation);
       break;
     case 2:
       // 1. perform the file op, record the response in the
@@ -82,7 +82,7 @@ struct response* handleRequest(struct request *req) {
       // handle and send the response
       // return the code of the file op
       c = findClient(req);
-      handleOperation(c, req->operation);
+      res = handleOperation(c, req->operation);
       printClient(c);
   }
 
@@ -98,7 +98,7 @@ struct client* findClient(struct request *req) {
 }
 
 struct client* addClient(struct request *req) {
-  printf("\n Adding new client! \n");
+  printf("\nAdding new client! \n");
 
   struct client *c =  Client(req->m, req->c, req->r, req->i);
   clients[clientNum] = c;
@@ -137,28 +137,34 @@ void printClient(struct client *c) {
   printf("=======================================\n");
 }
 
-char* handleOperation(struct client *c, char* operation) {
+struct response* handleOperation(struct client *c, char* operation) {
   char* file = getWord(operation, 1);
+  char* options = getWord(operation, 2);
+  char* fileName = prefixFilename(file, c);
   char* result;
-  printf("\n file: %s \n", file);
+  struct response* res = (struct response*)malloc(sizeof(struct response));
+  printf("file:%s \n", fileName);
+  printf("options: %s \n", options);
 
   if (strstr(operation, OPEN) != NULL) {
-    printf("\n Opening! \n");
+    printf("\nOpening! \n");
+    res->status = open(fileName, options);
+    res->r = c->r;
   }
   else if (strstr(operation, CLOSE) != NULL)
-    printf("\n closing! \n");
+    printf("\nclosing! \n");
   else if (strstr(operation, READ) != NULL)
-    printf("\n reading! \n");
+    printf("\nreading! \n");
   else if (strstr(operation, LSEEK) != NULL)
-    printf("\n lseeking! \n");
+    printf("\nlseeking! \n");
   else if (strstr(operation, WRITE) != NULL)
-    printf("\n writing! \n");
+    printf("\nwriting! \n");
   else if (strstr(operation, FAIL) != NULL)
-    printf("\n failing! \n");
+    printf("\nfailing! \n");
   else
     printf("\n not sure what to do... \n");
 
-  return "hi";
+  return res;
 }
 
 char* getWord(char* line, int wordNum) {
@@ -169,13 +175,67 @@ char* getWord(char* line, int wordNum) {
   for (int i = 0; i < len; i++) {
     letter = line[i];
 
-    if (isspace(letter)) words++;
     if (words == wordNum) {
       file[index] = letter;
       index++;
     }
+    if (isspace(letter)) words++;
   }
 
-  file[index] = '\0';
   return file;
 }
+
+int open(char* file, char* permissions) {
+  int index = getFile(file);
+  int read = (strstr(permissions, READ) != NULL) ? 1 : 0;
+  int write = (strstr(permissions, WRITE) != NULL) ? 1 : 0;
+  struct file *f;
+
+  if (read && write) permissions = "rw";
+  else if (read) permissions = "r";
+  else if (write) permissions = "w";
+
+  printf("index: %d\n", index);
+  // not found
+  if (index == -1) {
+    f = (struct file *)malloc(sizeof(struct file));
+    f->fileName = file;
+    f->file = fopen(file, permissions);
+    files[fileNum] = f;
+    fileNum++;
+  } else {
+    f = files[index];
+  }
+
+  f->read = read;
+  f->write = write;
+
+  return 1;
+}
+
+// search for file, if found return else
+// make new client and add it
+int getFile(char* fileName) {
+  for (int i = 0; i < fileNum; i++)
+    if (strcmp(fileName, files[i]->fileName) == 0)
+      return i;
+
+  return -1;
+}
+
+char* readFile(char* file, int bytes) {
+
+  return "hi";
+}
+
+char* prefixFilename(char* file, struct client *c) {
+  char buf[2];
+  sprintf(buf, "%d", c->c);
+  char* fileName = strcat(c->m, buf);
+  fileName = strcat(fileName, "-");
+  fileName = strcat(fileName, file);
+
+  return fileName;
+}
+
+/* char* write(struct file *file, char* argument); */

@@ -21,7 +21,14 @@ struct request {
   char operation[80];
 };
 
+struct response {
+  int status;
+  int r;
+  char *body;
+};
+
 void printRequest(struct request* req);
+void printResponse(struct response* res);
 void printError(const char *errorMessage, int die);
 struct request* Request(char* client_ip, char* m, char* c, char* r, char* i, char* operation);
 

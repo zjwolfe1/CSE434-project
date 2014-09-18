@@ -8,7 +8,8 @@ int main(int argc, char* argv[]) {
   unsigned int fromSize;
   char* servIP;
   char clientString[REQUEST_MAX] = "$$$$$\0";
-  struct request *req, *res;
+  struct request *req;
+  struct response *res;
   res = malloc(sizeof(*res));
 
   if (argc != 6) {
@@ -40,8 +41,8 @@ int main(int argc, char* argv[]) {
 
   printf("================================\n");
   printf("RECIEVING RES\n");
-  printf("================================");
-  printRequest(req);
+  printf("================================\n");
+  printResponse(res);
 
   // cleanup
   free(req);
