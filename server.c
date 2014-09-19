@@ -171,8 +171,12 @@ struct response* handleOperation(struct client *c, char* operation) {
 
   else if (strstr(operation, LSEEK) != NULL)
     printf("\nlseeking! \n");
-  else if (strstr(operation, WRITE) != NULL)
+
+  else if (strstr(operation, WRITE) != NULL) {
     printf("\nwriting! \n");
+    res->status = writeFile(fileName, options);
+    res->r = c->r;
+  }
   else if (strstr(operation, FAIL) != NULL)
     printf("\nfailing! \n");
   else
@@ -189,7 +193,8 @@ char* getWord(char* line, int wordNum) {
   for (int i = 0; i < len; i++) {
     letter = line[i];
 
-    if (words == wordNum && !isspace(letter)) {
+    // last check is because of the quotes
+    if (words == wordNum && !isspace(letter) && '"' != letter) {
       file[index] = letter;
       index++;
     }
@@ -273,4 +278,12 @@ int closeFile(char* file) {
   return fclose(f->file);
 }
 
-/* char* write(struct file *file, char* argument); */
+int writeFile(char* file, char* argument) {
+  int index = getFile(file);
+  struct file* f;
+
+  if (index == -1) return -1;
+
+  f = files[index];
+  return fprintf(f->file, "%s", argument);
+}

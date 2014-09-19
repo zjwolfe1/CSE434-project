@@ -45,6 +45,6 @@ int closeFile(char* file);
 int getFile(char* fileName);
 char* prefixFilename(char* file, struct client* clientName);
 void readFile(char* body, char* file, int bytes);
-/* int write(struct file *file, char* argument); */
+int writeFile(char* file, char* argument);
 
 #endif
