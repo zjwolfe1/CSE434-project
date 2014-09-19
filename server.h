@@ -41,6 +41,7 @@ struct response* handleRequest(struct request *req);
 void printClient(struct client *c);
 char* getWord(char* line, int wordNum);
 int open(char* file, char* permissions);
+int closeFile(char* file);
 int getFile(char* fileName);
 char* prefixFilename(char* file, struct client* clientName);
 void readFile(char* body, char* file, int bytes);
