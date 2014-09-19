@@ -287,3 +287,13 @@ int writeFile(char* file, char* argument) {
   f = files[index];
   return fprintf(f->file, "%s", argument);
 }
+
+int fileSeek(char* file, int bytes) {
+  int index = getFile(file);
+  struct file* f;
+
+  if (index == -1) return -1;
+
+  f = files[index];
+  return fseek(f->file, bytes, SEEK_CUR);
+}
