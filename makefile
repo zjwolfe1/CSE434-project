@@ -1,6 +1,6 @@
 EXEC = run
 CC = gcc
-CFLAGS = -c -Wall
+CFLAGS = -c -Wall -std=c99
 
 server:utils.o server.o
 	$(CC) -g -o server utils.o server.o

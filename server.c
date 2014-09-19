@@ -169,8 +169,11 @@ struct response* handleOperation(struct client *c, char* operation) {
     res->status = (res->body) ? 1 : 0;
   }
 
-  else if (strstr(operation, LSEEK) != NULL)
+  else if (strstr(operation, LSEEK) != NULL) {
     printf("\nlseeking! \n");
+    res->status = seekFile(fileName, atoi(options));
+    res->r = c->r;
+  }
 
   else if (strstr(operation, WRITE) != NULL) {
     printf("\nwriting! \n");
@@ -194,11 +197,18 @@ char* getWord(char* line, int wordNum) {
     letter = line[i];
 
     // last check is because of the quotes
-    if (words == wordNum && !isspace(letter) && '"' != letter) {
+    if (words == 1 && words == wordNum && !isspace(letter)) {
       file[index] = letter;
       index++;
     }
-    if (isspace(letter)) words++;
+
+    if (words == 2 && wordNum == words && '"' != letter) {
+      file[index] = letter;
+      index++;
+    }
+
+    // dont increment words if we are inside quotes
+    if (isspace(letter) && words != 2) words++;
   }
 
   return file;
@@ -283,12 +293,17 @@ int writeFile(char* file, char* argument) {
   struct file* f;
 
   if (index == -1) return -1;
-
   f = files[index];
+
+  if (!f->write || !f->file) {
+    printf("permission denied.\n");
+    return -1;
+  }
+
   return fprintf(f->file, "%s", argument);
 }
 
-int fileSeek(char* file, int bytes) {
+int seekFile(char* file, int bytes) {
   int index = getFile(file);
   struct file* f;
 
