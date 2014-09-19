@@ -156,8 +156,11 @@ struct response* handleOperation(struct client *c, char* operation) {
     res->r = c->r;
   }
 
-  else if (strstr(operation, CLOSE) != NULL)
+  else if (strstr(operation, CLOSE) != NULL) {
     printf("\nclosing! \n");
+    res->status = closeFile(fileName);
+    res->r = c->r;
+  }
 
   else if (strstr(operation, READ) != NULL) {
     printf("\nreading! \n");
@@ -187,7 +190,6 @@ char* getWord(char* line, int wordNum) {
     letter = line[i];
 
     if (words == wordNum && !isspace(letter)) {
-      printf("char: %c, word: %d, wordNum: %d\n", letter, words, wordNum);
       file[index] = letter;
       index++;
     }
@@ -245,17 +247,13 @@ void readFile(char* body, char* file, int bytes) {
   f = files[index];
 
   // check if can read
-  if (f->read && f->file) {
-    printf("strcmp: %d\n", (strcmp(f->fileName, "zach3-f1.txt") != 0));
+  if (f->read && f->file)
     fread(body, 1, bytes, f->file);
-    printf("Buffer: %s, bytes: %d, filename: %s\n", body, bytes, f->fileName);
-  }
   else
     printf("permission denied.\n");
 }
 
 char* prefixFilename(char* file, struct client *c) {
-  printf("\n FILE: %s,%d\n", file, 2);
   char buf[sizeof(int) + 1];
   sprintf(buf, "%d", c->c);
   char* fileName = strcat(c->m, buf);
@@ -263,6 +261,16 @@ char* prefixFilename(char* file, struct client *c) {
   fileName = strcat(fileName, file);
 
   return fileName;
+}
+
+int closeFile(char* file) {
+  int index = getFile(file);
+  struct file* f;
+
+  if (index == -1) return -1;
+
+  f = files[index];
+  return fclose(f->file);
 }
 
 /* char* write(struct file *file, char* argument); */
