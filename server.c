@@ -66,29 +66,29 @@ struct response* handleRequest(struct request *req) {
   struct client* c;
   struct response *res;
 
-  switch (rand() % 3) {
-    case 0:
-      // drop the request
-      printf("\nDropping the request... \n");
-      res = malloc(sizeof(*res));
-      break;
-    case 1:
-      // handle but not send the response
-      printf("\nHandling the request, but not responding... \n");
-      c = findClient(req);
-      res = malloc(sizeof(*res));
-      handleOperation(c, req->operation);
-      break;
-    case 2:
-      // 1. perform the file op, record the response in the
-      // 2. client table, update the response number in the client
-      // table
-      // handle and send the response
-      // return the code of the file op
+  /* switch (rand() % 3) { */
+  /*   case 0: */
+  /*     // drop the request */
+  /*     printf("\nDropping the request... \n"); */
+  /*     res = malloc(sizeof(*res)); */
+  /*     break; */
+  /*   case 1: */
+  /*     // handle but not send the response */
+  /*     printf("\nHandling the request, but not responding... \n"); */
+  /*     c = findClient(req); */
+  /*     res = malloc(sizeof(*res)); */
+  /*     handleOperation(c, req->operation); */
+  /*     break; */
+  /*   case 2: */
+  /*     // 1. perform the file op, record the response in the */
+  /*     // 2. client table, update the response number in the client */
+  /*     // table */
+  /*     // handle and send the response */
+  /*     // return the code of the file op */
       c = findClient(req);
       res = handleOperation(c, req->operation);
       printClient(c);
-  }
+  /* } */
 
   return res;
 }
@@ -286,4 +286,14 @@ int writeFile(char* file, char* argument) {
 
   f = files[index];
   return fprintf(f->file, "%s", argument);
+}
+
+int fileSeek(char* file, int bytes) {
+  int index = getFile(file);
+  struct file* f;
+
+  if (index == -1) return -1;
+
+  f = files[index];
+  return fseek(f->file, bytes, SEEK_CUR);
 }

@@ -46,5 +46,6 @@ int getFile(char* fileName);
 char* prefixFilename(char* file, struct client* clientName);
 void readFile(char* body, char* file, int bytes);
 int writeFile(char* file, char* argument);
+int fileSeek(char* file, int bytes);
 
 #endif
